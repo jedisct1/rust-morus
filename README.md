@@ -57,8 +57,9 @@ WebAssembly (WAVM)
 | chacha20-poly1305 | 335.82 M/s |
 | morus             | 1.95 G/s   |
 
-Other implementations (WebAssembly, WAVM)
+Other implementations (WebAssembly)
 
-| cipher (implementation) | speed    |
-| ----------------------- | -------- |
-| zig-morus (Zig)         | 2.27 G/s |
+| cipher (implementation, runtime)  | speed    |
+| --------------------------------- | -------- |
+| zig-morus (Zig, wasmtime+simd128) | 1.45 G/s |
+| zig-morus (Zig, WAVM)             | 2.27 G/s |
