@@ -56,3 +56,9 @@ WebAssembly (WAVM)
 | aes128-gcm        | 57.01 M/s  |
 | chacha20-poly1305 | 335.82 M/s |
 | morus             | 1.95 G/s   |
+
+Other implementations (WebAssembly, WAVM)
+
+| cipher (implementation) | speed    |
+| ----------------------- | -------- |
+| zig-morus (Zig)         | 2.27 G/s |
