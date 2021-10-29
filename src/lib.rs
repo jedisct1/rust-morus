@@ -184,14 +184,7 @@ impl State {
         };
         let c = {
             let s = &self.s;
-            Lane {
-                l: [
-                    p.l[0] ^ s[0].l[0] ^ s[1].l[1] ^ (s[2].l[0] & s[3].l[0]),
-                    p.l[1] ^ s[0].l[1] ^ s[1].l[2] ^ (s[2].l[1] & s[3].l[1]),
-                    p.l[2] ^ s[0].l[2] ^ s[1].l[3] ^ (s[2].l[2] & s[3].l[2]),
-                    p.l[3] ^ s[0].l[3] ^ s[1].l[0] ^ (s[2].l[3] & s[3].l[3]),
-                ],
-            }
+            p ^ s[0] ^ s[1].shuffle(1, 2, 3, 0) ^ (s[2] & s[3])
         };
         dst[0..8].copy_from_slice(&c.l[0].to_le_bytes());
         dst[8..16].copy_from_slice(&c.l[1].to_le_bytes());
@@ -211,14 +204,7 @@ impl State {
         };
         let p = {
             let s = &self.s;
-            Lane {
-                l: [
-                    c.l[0] ^ s[0].l[0] ^ s[1].l[1] ^ (s[2].l[0] & s[3].l[0]),
-                    c.l[1] ^ s[0].l[1] ^ s[1].l[2] ^ (s[2].l[1] & s[3].l[1]),
-                    c.l[2] ^ s[0].l[2] ^ s[1].l[3] ^ (s[2].l[2] & s[3].l[2]),
-                    c.l[3] ^ s[0].l[3] ^ s[1].l[0] ^ (s[2].l[3] & s[3].l[3]),
-                ],
-            }
+            c ^ s[0] ^ s[1].shuffle(1, 2, 3, 0) ^ (s[2] & s[3])
         };
         dst[0..8].copy_from_slice(&p.l[0].to_le_bytes());
         dst[8..16].copy_from_slice(&p.l[1].to_le_bytes());
@@ -241,17 +227,12 @@ impl State {
         };
         let p = {
             let s = &self.s;
-            [
-                c.l[0] ^ s[0].l[0] ^ s[1].l[1] ^ (s[2].l[0] & s[3].l[0]),
-                c.l[1] ^ s[0].l[1] ^ s[1].l[2] ^ (s[2].l[1] & s[3].l[1]),
-                c.l[2] ^ s[0].l[2] ^ s[1].l[3] ^ (s[2].l[2] & s[3].l[2]),
-                c.l[3] ^ s[0].l[3] ^ s[1].l[0] ^ (s[2].l[3] & s[3].l[3]),
-            ]
+            c ^ s[0] ^ s[1].shuffle(1, 2, 3, 0) ^ (s[2] & s[3])
         };
-        dst[0..8].copy_from_slice(&p[0].to_le_bytes());
-        dst[8..16].copy_from_slice(&p[1].to_le_bytes());
-        dst[16..24].copy_from_slice(&p[2].to_le_bytes());
-        dst[24..32].copy_from_slice(&p[3].to_le_bytes());
+        dst[0..8].copy_from_slice(&p.l[0].to_le_bytes());
+        dst[8..16].copy_from_slice(&p.l[1].to_le_bytes());
+        dst[16..24].copy_from_slice(&p.l[2].to_le_bytes());
+        dst[24..32].copy_from_slice(&p.l[3].to_le_bytes());
         dst[len..].fill(0);
         let p = Lane {
             l: [
@@ -279,10 +260,7 @@ impl State {
             self.update(t);
         }
         let s = &mut self.s;
-        s[0].l[0] ^= s[1].l[1] ^ (s[2].l[0] & s[3].l[0]);
-        s[0].l[1] ^= s[1].l[2] ^ (s[2].l[1] & s[3].l[1]);
-        s[0].l[2] ^= s[1].l[3] ^ (s[2].l[2] & s[3].l[2]);
-        s[0].l[3] ^= s[1].l[0] ^ (s[2].l[3] & s[3].l[3]);
+        s[0] ^= s[1].shuffle(1, 2, 3, 0) ^ (s[2] & s[3]);
         let mut tag = [0u8; 16];
         tag[0..8].copy_from_slice(&s[0].l[0].to_le_bytes());
         tag[8..16].copy_from_slice(&s[0].l[1].to_le_bytes());
