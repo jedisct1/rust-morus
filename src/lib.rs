@@ -30,112 +30,118 @@ pub type Nonce = [u8; 16];
 
 #[repr(transparent)]
 #[derive(Debug, Clone, Copy)]
+struct Lane {
+    l: [u64; 4],
+}
+
+#[repr(transparent)]
+#[derive(Debug, Clone, Copy)]
 struct State {
-    s: [[u64; 4]; 5],
+    s: [Lane; 5],
 }
 
 impl State {
-    fn update(&mut self, input: &[u64; 4]) {
+    fn update(&mut self, input: &Lane) {
         let s = &mut self.s;
-        s[0][0] ^= s[3][0];
-        s[0][1] ^= s[3][1];
-        s[0][2] ^= s[3][2];
-        s[0][3] ^= s[3][3];
-        let t = s[3][3];
-        s[3][3] = s[3][2];
-        s[3][2] = s[3][1];
-        s[3][1] = s[3][0];
-        s[3][0] = t;
-        s[0][0] ^= s[1][0] & s[2][0];
-        s[0][1] ^= s[1][1] & s[2][1];
-        s[0][2] ^= s[1][2] & s[2][2];
-        s[0][3] ^= s[1][3] & s[2][3];
-        s[0][0] = s[0][0].rotate_left(13);
-        s[0][1] = s[0][1].rotate_left(13);
-        s[0][2] = s[0][2].rotate_left(13);
-        s[0][3] = s[0][3].rotate_left(13);
+        s[0].l[0] ^= s[3].l[0];
+        s[0].l[1] ^= s[3].l[1];
+        s[0].l[2] ^= s[3].l[2];
+        s[0].l[3] ^= s[3].l[3];
+        let t = s[3].l[3];
+        s[3].l[3] = s[3].l[2];
+        s[3].l[2] = s[3].l[1];
+        s[3].l[1] = s[3].l[0];
+        s[3].l[0] = t;
+        s[0].l[0] ^= s[1].l[0] & s[2].l[0];
+        s[0].l[1] ^= s[1].l[1] & s[2].l[1];
+        s[0].l[2] ^= s[1].l[2] & s[2].l[2];
+        s[0].l[3] ^= s[1].l[3] & s[2].l[3];
+        s[0].l[0] = s[0].l[0].rotate_left(13);
+        s[0].l[1] = s[0].l[1].rotate_left(13);
+        s[0].l[2] = s[0].l[2].rotate_left(13);
+        s[0].l[3] = s[0].l[3].rotate_left(13);
 
-        s[1][0] ^= input[0];
-        s[1][1] ^= input[1];
-        s[1][2] ^= input[2];
-        s[1][3] ^= input[3];
-        s[1][0] ^= s[4][0];
-        s[1][1] ^= s[4][1];
-        s[1][2] ^= s[4][2];
-        s[1][3] ^= s[4][3];
-        s[4].swap(3, 1);
-        s[4].swap(2, 0);
-        s[1][0] ^= s[2][0] & s[3][0];
-        s[1][1] ^= s[2][1] & s[3][1];
-        s[1][2] ^= s[2][2] & s[3][2];
-        s[1][3] ^= s[2][3] & s[3][3];
-        s[1][0] = s[1][0].rotate_left(46);
-        s[1][1] = s[1][1].rotate_left(46);
-        s[1][2] = s[1][2].rotate_left(46);
-        s[1][3] = s[1][3].rotate_left(46);
+        s[1].l[0] ^= input.l[0];
+        s[1].l[1] ^= input.l[1];
+        s[1].l[2] ^= input.l[2];
+        s[1].l[3] ^= input.l[3];
+        s[1].l[0] ^= s[4].l[0];
+        s[1].l[1] ^= s[4].l[1];
+        s[1].l[2] ^= s[4].l[2];
+        s[1].l[3] ^= s[4].l[3];
+        s[4].l.swap(3, 1);
+        s[4].l.swap(2, 0);
+        s[1].l[0] ^= s[2].l[0] & s[3].l[0];
+        s[1].l[1] ^= s[2].l[1] & s[3].l[1];
+        s[1].l[2] ^= s[2].l[2] & s[3].l[2];
+        s[1].l[3] ^= s[2].l[3] & s[3].l[3];
+        s[1].l[0] = s[1].l[0].rotate_left(46);
+        s[1].l[1] = s[1].l[1].rotate_left(46);
+        s[1].l[2] = s[1].l[2].rotate_left(46);
+        s[1].l[3] = s[1].l[3].rotate_left(46);
 
-        s[2][0] ^= input[0];
-        s[2][1] ^= input[1];
-        s[2][2] ^= input[2];
-        s[2][3] ^= input[3];
-        s[2][0] ^= s[0][0];
-        s[2][1] ^= s[0][1];
-        s[2][2] ^= s[0][2];
-        s[2][3] ^= s[0][3];
-        let t = s[0][0];
-        s[0][0] = s[0][1];
-        s[0][1] = s[0][2];
-        s[0][2] = s[0][3];
-        s[0][3] = t;
-        s[2][0] ^= s[3][0] & s[4][0];
-        s[2][1] ^= s[3][1] & s[4][1];
-        s[2][2] ^= s[3][2] & s[4][2];
-        s[2][3] ^= s[3][3] & s[4][3];
-        s[2][0] = s[2][0].rotate_left(38);
-        s[2][1] = s[2][1].rotate_left(38);
-        s[2][2] = s[2][2].rotate_left(38);
-        s[2][3] = s[2][3].rotate_left(38);
+        s[2].l[0] ^= input.l[0];
+        s[2].l[1] ^= input.l[1];
+        s[2].l[2] ^= input.l[2];
+        s[2].l[3] ^= input.l[3];
+        s[2].l[0] ^= s[0].l[0];
+        s[2].l[1] ^= s[0].l[1];
+        s[2].l[2] ^= s[0].l[2];
+        s[2].l[3] ^= s[0].l[3];
+        let t = s[0].l[0];
+        s[0].l[0] = s[0].l[1];
+        s[0].l[1] = s[0].l[2];
+        s[0].l[2] = s[0].l[3];
+        s[0].l[3] = t;
+        s[2].l[0] ^= s[3].l[0] & s[4].l[0];
+        s[2].l[1] ^= s[3].l[1] & s[4].l[1];
+        s[2].l[2] ^= s[3].l[2] & s[4].l[2];
+        s[2].l[3] ^= s[3].l[3] & s[4].l[3];
+        s[2].l[0] = s[2].l[0].rotate_left(38);
+        s[2].l[1] = s[2].l[1].rotate_left(38);
+        s[2].l[2] = s[2].l[2].rotate_left(38);
+        s[2].l[3] = s[2].l[3].rotate_left(38);
 
-        s[3][0] ^= input[0];
-        s[3][1] ^= input[1];
-        s[3][2] ^= input[2];
-        s[3][3] ^= input[3];
-        s[3][0] ^= s[1][0];
-        s[3][1] ^= s[1][1];
-        s[3][2] ^= s[1][2];
-        s[3][3] ^= s[1][3];
-        s[1].swap(3, 1);
-        s[1].swap(2, 0);
-        s[3][0] ^= s[4][0] & s[0][0];
-        s[3][1] ^= s[4][1] & s[0][1];
-        s[3][2] ^= s[4][2] & s[0][2];
-        s[3][3] ^= s[4][3] & s[0][3];
-        s[3][0] = s[3][0].rotate_left(7);
-        s[3][1] = s[3][1].rotate_left(7);
-        s[3][2] = s[3][2].rotate_left(7);
-        s[3][3] = s[3][3].rotate_left(7);
+        s[3].l[0] ^= input.l[0];
+        s[3].l[1] ^= input.l[1];
+        s[3].l[2] ^= input.l[2];
+        s[3].l[3] ^= input.l[3];
+        s[3].l[0] ^= s[1].l[0];
+        s[3].l[1] ^= s[1].l[1];
+        s[3].l[2] ^= s[1].l[2];
+        s[3].l[3] ^= s[1].l[3];
+        s[1].l.swap(3, 1);
+        s[1].l.swap(2, 0);
+        s[3].l[0] ^= s[4].l[0] & s[0].l[0];
+        s[3].l[1] ^= s[4].l[1] & s[0].l[1];
+        s[3].l[2] ^= s[4].l[2] & s[0].l[2];
+        s[3].l[3] ^= s[4].l[3] & s[0].l[3];
+        s[3].l[0] = s[3].l[0].rotate_left(7);
+        s[3].l[1] = s[3].l[1].rotate_left(7);
+        s[3].l[2] = s[3].l[2].rotate_left(7);
+        s[3].l[3] = s[3].l[3].rotate_left(7);
 
-        s[4][0] ^= input[0];
-        s[4][1] ^= input[1];
-        s[4][2] ^= input[2];
-        s[4][3] ^= input[3];
-        s[4][0] ^= s[2][0];
-        s[4][1] ^= s[2][1];
-        s[4][2] ^= s[2][2];
-        s[4][3] ^= s[2][3];
-        let t = s[2][3];
-        s[2][3] = s[2][2];
-        s[2][2] = s[2][1];
-        s[2][1] = s[2][0];
-        s[2][0] = t;
-        s[4][0] ^= s[0][0] & s[1][0];
-        s[4][1] ^= s[0][1] & s[1][1];
-        s[4][2] ^= s[0][2] & s[1][2];
-        s[4][3] ^= s[0][3] & s[1][3];
-        s[4][0] = s[4][0].rotate_left(4);
-        s[4][1] = s[4][1].rotate_left(4);
-        s[4][2] = s[4][2].rotate_left(4);
-        s[4][3] = s[4][3].rotate_left(4);
+        s[4].l[0] ^= input.l[0];
+        s[4].l[1] ^= input.l[1];
+        s[4].l[2] ^= input.l[2];
+        s[4].l[3] ^= input.l[3];
+        s[4].l[0] ^= s[2].l[0];
+        s[4].l[1] ^= s[2].l[1];
+        s[4].l[2] ^= s[2].l[2];
+        s[4].l[3] ^= s[2].l[3];
+        let t = s[2].l[3];
+        s[2].l[3] = s[2].l[2];
+        s[2].l[2] = s[2].l[1];
+        s[2].l[1] = s[2].l[0];
+        s[2].l[0] = t;
+        s[4].l[0] ^= s[0].l[0] & s[1].l[0];
+        s[4].l[1] ^= s[0].l[1] & s[1].l[1];
+        s[4].l[2] ^= s[0].l[2] & s[1].l[2];
+        s[4].l[3] ^= s[0].l[3] & s[1].l[3];
+        s[4].l[0] = s[4].l[0].rotate_left(4);
+        s[4].l[1] = s[4].l[1].rotate_left(4);
+        s[4].l[2] = s[4].l[2].rotate_left(4);
+        s[4].l[3] = s[4].l[3].rotate_left(4);
     }
 
     pub fn new(key: &Key, nonce: &Nonce) -> Self {
@@ -148,76 +154,92 @@ impl State {
         let k1 = u64::from_le_bytes(key[8..16].try_into().unwrap());
         let mut state = State {
             s: [
-                [
-                    u64::from_le_bytes(nonce[0..8].try_into().unwrap()),
-                    u64::from_le_bytes(nonce[8..16].try_into().unwrap()),
-                    0,
-                    0,
-                ],
-                [k0, k1, k0, k1],
-                [!0, !0, !0, !0],
-                [0, 0, 0, 0],
-                [
-                    u64::from_le_bytes(c[0..8].try_into().unwrap()),
-                    u64::from_le_bytes(c[8..16].try_into().unwrap()),
-                    u64::from_le_bytes(c[16..24].try_into().unwrap()),
-                    u64::from_le_bytes(c[24..32].try_into().unwrap()),
-                ],
+                Lane {
+                    l: [
+                        u64::from_le_bytes(nonce[0..8].try_into().unwrap()),
+                        u64::from_le_bytes(nonce[8..16].try_into().unwrap()),
+                        0,
+                        0,
+                    ],
+                },
+                Lane {
+                    l: [k0, k1, k0, k1],
+                },
+                Lane {
+                    l: [!0, !0, !0, !0],
+                },
+                Lane { l: [0, 0, 0, 0] },
+                Lane {
+                    l: [
+                        u64::from_le_bytes(c[0..8].try_into().unwrap()),
+                        u64::from_le_bytes(c[8..16].try_into().unwrap()),
+                        u64::from_le_bytes(c[16..24].try_into().unwrap()),
+                        u64::from_le_bytes(c[24..32].try_into().unwrap()),
+                    ],
+                },
             ],
         };
         for _ in 0..16 {
-            state.update(&[0u64; 4]);
+            state.update(&Lane { l: [0u64; 4] });
         }
-        state.s[1][0] ^= k0;
-        state.s[1][1] ^= k1;
-        state.s[1][2] ^= k0;
-        state.s[1][3] ^= k1;
+        state.s[1].l[0] ^= k0;
+        state.s[1].l[1] ^= k1;
+        state.s[1].l[2] ^= k0;
+        state.s[1].l[3] ^= k1;
         state
     }
 
     fn enc(&mut self, dst: &mut [u8; 32], src: &[u8; 32]) {
-        let p: [u64; 4] = [
-            u64::from_le_bytes(src[0..8].try_into().unwrap()),
-            u64::from_le_bytes(src[8..16].try_into().unwrap()),
-            u64::from_le_bytes(src[16..24].try_into().unwrap()),
-            u64::from_le_bytes(src[24..32].try_into().unwrap()),
-        ];
+        let p = Lane {
+            l: [
+                u64::from_le_bytes(src[0..8].try_into().unwrap()),
+                u64::from_le_bytes(src[8..16].try_into().unwrap()),
+                u64::from_le_bytes(src[16..24].try_into().unwrap()),
+                u64::from_le_bytes(src[24..32].try_into().unwrap()),
+            ],
+        };
         let c = {
             let s = &self.s;
-            [
-                p[0] ^ s[0][0] ^ s[1][1] ^ (s[2][0] & s[3][0]),
-                p[1] ^ s[0][1] ^ s[1][2] ^ (s[2][1] & s[3][1]),
-                p[2] ^ s[0][2] ^ s[1][3] ^ (s[2][2] & s[3][2]),
-                p[3] ^ s[0][3] ^ s[1][0] ^ (s[2][3] & s[3][3]),
-            ]
+            Lane {
+                l: [
+                    p.l[0] ^ s[0].l[0] ^ s[1].l[1] ^ (s[2].l[0] & s[3].l[0]),
+                    p.l[1] ^ s[0].l[1] ^ s[1].l[2] ^ (s[2].l[1] & s[3].l[1]),
+                    p.l[2] ^ s[0].l[2] ^ s[1].l[3] ^ (s[2].l[2] & s[3].l[2]),
+                    p.l[3] ^ s[0].l[3] ^ s[1].l[0] ^ (s[2].l[3] & s[3].l[3]),
+                ],
+            }
         };
-        dst[0..8].copy_from_slice(&c[0].to_le_bytes());
-        dst[8..16].copy_from_slice(&c[1].to_le_bytes());
-        dst[16..24].copy_from_slice(&c[2].to_le_bytes());
-        dst[24..32].copy_from_slice(&c[3].to_le_bytes());
+        dst[0..8].copy_from_slice(&c.l[0].to_le_bytes());
+        dst[8..16].copy_from_slice(&c.l[1].to_le_bytes());
+        dst[16..24].copy_from_slice(&c.l[2].to_le_bytes());
+        dst[24..32].copy_from_slice(&c.l[3].to_le_bytes());
         self.update(&p);
     }
 
     fn dec(&mut self, dst: &mut [u8; 32], src: &[u8; 32]) {
-        let c: [u64; 4] = [
-            u64::from_le_bytes(src[0..8].try_into().unwrap()),
-            u64::from_le_bytes(src[8..16].try_into().unwrap()),
-            u64::from_le_bytes(src[16..24].try_into().unwrap()),
-            u64::from_le_bytes(src[24..32].try_into().unwrap()),
-        ];
+        let c = Lane {
+            l: [
+                u64::from_le_bytes(src[0..8].try_into().unwrap()),
+                u64::from_le_bytes(src[8..16].try_into().unwrap()),
+                u64::from_le_bytes(src[16..24].try_into().unwrap()),
+                u64::from_le_bytes(src[24..32].try_into().unwrap()),
+            ],
+        };
         let p = {
             let s = &self.s;
-            [
-                c[0] ^ s[0][0] ^ s[1][1] ^ (s[2][0] & s[3][0]),
-                c[1] ^ s[0][1] ^ s[1][2] ^ (s[2][1] & s[3][1]),
-                c[2] ^ s[0][2] ^ s[1][3] ^ (s[2][2] & s[3][2]),
-                c[3] ^ s[0][3] ^ s[1][0] ^ (s[2][3] & s[3][3]),
-            ]
+            Lane {
+                l: [
+                    c.l[0] ^ s[0].l[0] ^ s[1].l[1] ^ (s[2].l[0] & s[3].l[0]),
+                    c.l[1] ^ s[0].l[1] ^ s[1].l[2] ^ (s[2].l[1] & s[3].l[1]),
+                    c.l[2] ^ s[0].l[2] ^ s[1].l[3] ^ (s[2].l[2] & s[3].l[2]),
+                    c.l[3] ^ s[0].l[3] ^ s[1].l[0] ^ (s[2].l[3] & s[3].l[3]),
+                ],
+            }
         };
-        dst[0..8].copy_from_slice(&p[0].to_le_bytes());
-        dst[8..16].copy_from_slice(&p[1].to_le_bytes());
-        dst[16..24].copy_from_slice(&p[2].to_le_bytes());
-        dst[24..32].copy_from_slice(&p[3].to_le_bytes());
+        dst[0..8].copy_from_slice(&p.l[0].to_le_bytes());
+        dst[8..16].copy_from_slice(&p.l[1].to_le_bytes());
+        dst[16..24].copy_from_slice(&p.l[2].to_le_bytes());
+        dst[24..32].copy_from_slice(&p.l[3].to_le_bytes());
         self.update(&p);
     }
 
@@ -225,19 +247,21 @@ impl State {
         let len = src.len();
         let mut src_padded = [0u8; 32];
         src_padded[..len].copy_from_slice(src);
-        let c: [u64; 4] = [
-            u64::from_le_bytes(src_padded[0..8].try_into().unwrap()),
-            u64::from_le_bytes(src_padded[8..16].try_into().unwrap()),
-            u64::from_le_bytes(src_padded[16..24].try_into().unwrap()),
-            u64::from_le_bytes(src_padded[24..32].try_into().unwrap()),
-        ];
+        let c = Lane {
+            l: [
+                u64::from_le_bytes(src_padded[0..8].try_into().unwrap()),
+                u64::from_le_bytes(src_padded[8..16].try_into().unwrap()),
+                u64::from_le_bytes(src_padded[16..24].try_into().unwrap()),
+                u64::from_le_bytes(src_padded[24..32].try_into().unwrap()),
+            ],
+        };
         let p = {
             let s = &self.s;
             [
-                c[0] ^ s[0][0] ^ s[1][1] ^ (s[2][0] & s[3][0]),
-                c[1] ^ s[0][1] ^ s[1][2] ^ (s[2][1] & s[3][1]),
-                c[2] ^ s[0][2] ^ s[1][3] ^ (s[2][2] & s[3][2]),
-                c[3] ^ s[0][3] ^ s[1][0] ^ (s[2][3] & s[3][3]),
+                c.l[0] ^ s[0].l[0] ^ s[1].l[1] ^ (s[2].l[0] & s[3].l[0]),
+                c.l[1] ^ s[0].l[1] ^ s[1].l[2] ^ (s[2].l[1] & s[3].l[1]),
+                c.l[2] ^ s[0].l[2] ^ s[1].l[3] ^ (s[2].l[2] & s[3].l[2]),
+                c.l[3] ^ s[0].l[3] ^ s[1].l[0] ^ (s[2].l[3] & s[3].l[3]),
             ]
         };
         dst[0..8].copy_from_slice(&p[0].to_le_bytes());
@@ -245,35 +269,39 @@ impl State {
         dst[16..24].copy_from_slice(&p[2].to_le_bytes());
         dst[24..32].copy_from_slice(&p[3].to_le_bytes());
         dst[len..].fill(0);
-        let p: [u64; 4] = [
-            u64::from_le_bytes(dst[0..8].try_into().unwrap()),
-            u64::from_le_bytes(dst[8..16].try_into().unwrap()),
-            u64::from_le_bytes(dst[16..24].try_into().unwrap()),
-            u64::from_le_bytes(dst[24..32].try_into().unwrap()),
-        ];
+        let p = Lane {
+            l: [
+                u64::from_le_bytes(dst[0..8].try_into().unwrap()),
+                u64::from_le_bytes(dst[8..16].try_into().unwrap()),
+                u64::from_le_bytes(dst[16..24].try_into().unwrap()),
+                u64::from_le_bytes(dst[24..32].try_into().unwrap()),
+            ],
+        };
         self.update(&p);
     }
 
     fn mac(&mut self, adlen: usize, mlen: usize) -> Tag {
-        let t: [u64; 4] = [adlen as u64 * 8, mlen as u64 * 8, 0, 0];
+        let t = Lane {
+            l: [adlen as u64 * 8, mlen as u64 * 8, 0, 0],
+        };
         {
             let s = &mut self.s;
-            s[4][0] ^= s[0][0];
-            s[4][1] ^= s[0][1];
-            s[4][2] ^= s[0][2];
-            s[4][3] ^= s[0][3];
+            s[4].l[0] ^= s[0].l[0];
+            s[4].l[1] ^= s[0].l[1];
+            s[4].l[2] ^= s[0].l[2];
+            s[4].l[3] ^= s[0].l[3];
         }
         for _ in 0..10 {
             self.update(&t);
         }
         let s = &mut self.s;
-        s[0][0] ^= s[1][1] ^ (s[2][0] & s[3][0]);
-        s[0][1] ^= s[1][2] ^ (s[2][1] & s[3][1]);
-        s[0][2] ^= s[1][3] ^ (s[2][2] & s[3][2]);
-        s[0][3] ^= s[1][0] ^ (s[2][3] & s[3][3]);
+        s[0].l[0] ^= s[1].l[1] ^ (s[2].l[0] & s[3].l[0]);
+        s[0].l[1] ^= s[1].l[2] ^ (s[2].l[1] & s[3].l[1]);
+        s[0].l[2] ^= s[1].l[3] ^ (s[2].l[2] & s[3].l[2]);
+        s[0].l[3] ^= s[1].l[0] ^ (s[2].l[3] & s[3].l[3]);
         let mut tag = [0u8; 16];
-        tag[0..8].copy_from_slice(&s[0][0].to_le_bytes());
-        tag[8..16].copy_from_slice(&s[0][1].to_le_bytes());
+        tag[0..8].copy_from_slice(&s[0].l[0].to_le_bytes());
+        tag[8..16].copy_from_slice(&s[0].l[1].to_le_bytes());
         tag
     }
 }
