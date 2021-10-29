@@ -61,5 +61,5 @@ Other implementations (WebAssembly)
 
 | cipher (implementation, runtime)  | speed    |
 | --------------------------------- | -------- |
-| zig-morus (Zig, wasmtime+simd128) | 1.45 G/s |
-| zig-morus (Zig, WAVM)             | 2.27 G/s |
+| zig-morus (Zig, wasmtime+simd128) | 1.77 G/s |
+| zig-morus (Zig, WAVM)             | 3.50 G/s |
