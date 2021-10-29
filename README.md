@@ -1,7 +1,7 @@
 # MORUS for Rust
 
 This is a Rust implementation of
-[MORUS](https://competitions.cr.yp.to/round3/morusv2.pdf) (MORUS-1280-128)
+[MORUS](https://competitions.cr.yp.to/round3/morusv2.pdf) (MORUS-1280-128), ported from the [Zig implementation](https://github.com/jedisct1/zig-morus).
 
 MORUS is a fast authenticated cipher for platforms without hardware AES acceleration.
 

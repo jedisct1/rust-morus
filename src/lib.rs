@@ -96,6 +96,26 @@ impl Lane {
             l: [self.l[a], self.l[b], self.l[c], self.l[d]],
         }
     }
+
+    #[inline]
+    fn from_bytes(src: &[u8; 32]) -> Self {
+        Lane {
+            l: [
+                u64::from_le_bytes(src[0..8].try_into().unwrap()),
+                u64::from_le_bytes(src[8..16].try_into().unwrap()),
+                u64::from_le_bytes(src[16..24].try_into().unwrap()),
+                u64::from_le_bytes(src[24..32].try_into().unwrap()),
+            ],
+        }
+    }
+
+    #[inline]
+    fn write(&self, dst: &mut [u8; 32]) {
+        dst[0..8].copy_from_slice(&self.l[0].to_le_bytes());
+        dst[8..16].copy_from_slice(&self.l[1].to_le_bytes());
+        dst[16..24].copy_from_slice(&self.l[2].to_le_bytes());
+        dst[24..32].copy_from_slice(&self.l[3].to_le_bytes());
+    }
 }
 
 #[repr(transparent)]
@@ -153,14 +173,7 @@ impl State {
                     l: [!0, !0, !0, !0],
                 },
                 Lane { l: [0, 0, 0, 0] },
-                Lane {
-                    l: [
-                        u64::from_le_bytes(c[0..8].try_into().unwrap()),
-                        u64::from_le_bytes(c[8..16].try_into().unwrap()),
-                        u64::from_le_bytes(c[16..24].try_into().unwrap()),
-                        u64::from_le_bytes(c[24..32].try_into().unwrap()),
-                    ],
-                },
+                Lane::from_bytes(&c),
             ],
         };
         for _ in 0..16 {
@@ -174,42 +187,22 @@ impl State {
     }
 
     fn enc(&mut self, dst: &mut [u8; 32], src: &[u8; 32]) {
-        let p = Lane {
-            l: [
-                u64::from_le_bytes(src[0..8].try_into().unwrap()),
-                u64::from_le_bytes(src[8..16].try_into().unwrap()),
-                u64::from_le_bytes(src[16..24].try_into().unwrap()),
-                u64::from_le_bytes(src[24..32].try_into().unwrap()),
-            ],
-        };
+        let p = Lane::from_bytes(src);
         let c = {
             let s = &self.s;
             p ^ s[0] ^ s[1].shuffle(1, 2, 3, 0) ^ (s[2] & s[3])
         };
-        dst[0..8].copy_from_slice(&c.l[0].to_le_bytes());
-        dst[8..16].copy_from_slice(&c.l[1].to_le_bytes());
-        dst[16..24].copy_from_slice(&c.l[2].to_le_bytes());
-        dst[24..32].copy_from_slice(&c.l[3].to_le_bytes());
+        c.write(dst);
         self.update(p);
     }
 
     fn dec(&mut self, dst: &mut [u8; 32], src: &[u8; 32]) {
-        let c = Lane {
-            l: [
-                u64::from_le_bytes(src[0..8].try_into().unwrap()),
-                u64::from_le_bytes(src[8..16].try_into().unwrap()),
-                u64::from_le_bytes(src[16..24].try_into().unwrap()),
-                u64::from_le_bytes(src[24..32].try_into().unwrap()),
-            ],
-        };
+        let c = Lane::from_bytes(src);
         let p = {
             let s = &self.s;
             c ^ s[0] ^ s[1].shuffle(1, 2, 3, 0) ^ (s[2] & s[3])
         };
-        dst[0..8].copy_from_slice(&p.l[0].to_le_bytes());
-        dst[8..16].copy_from_slice(&p.l[1].to_le_bytes());
-        dst[16..24].copy_from_slice(&p.l[2].to_le_bytes());
-        dst[24..32].copy_from_slice(&p.l[3].to_le_bytes());
+        p.write(dst);
         self.update(p);
     }
 
@@ -217,31 +210,14 @@ impl State {
         let len = src.len();
         let mut src_padded = [0u8; 32];
         src_padded[..len].copy_from_slice(src);
-        let c = Lane {
-            l: [
-                u64::from_le_bytes(src_padded[0..8].try_into().unwrap()),
-                u64::from_le_bytes(src_padded[8..16].try_into().unwrap()),
-                u64::from_le_bytes(src_padded[16..24].try_into().unwrap()),
-                u64::from_le_bytes(src_padded[24..32].try_into().unwrap()),
-            ],
-        };
+        let c = Lane::from_bytes(&src_padded);
         let p = {
             let s = &self.s;
             c ^ s[0] ^ s[1].shuffle(1, 2, 3, 0) ^ (s[2] & s[3])
         };
-        dst[0..8].copy_from_slice(&p.l[0].to_le_bytes());
-        dst[8..16].copy_from_slice(&p.l[1].to_le_bytes());
-        dst[16..24].copy_from_slice(&p.l[2].to_le_bytes());
-        dst[24..32].copy_from_slice(&p.l[3].to_le_bytes());
+        p.write(dst);
         dst[len..].fill(0);
-        let p = Lane {
-            l: [
-                u64::from_le_bytes(dst[0..8].try_into().unwrap()),
-                u64::from_le_bytes(dst[8..16].try_into().unwrap()),
-                u64::from_le_bytes(dst[16..24].try_into().unwrap()),
-                u64::from_le_bytes(dst[24..32].try_into().unwrap()),
-            ],
-        };
+        let p = Lane::from_bytes(dst);
         self.update(p);
     }
 
