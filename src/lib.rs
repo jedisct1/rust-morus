@@ -29,7 +29,7 @@ pub type Key = [u8; 16];
 /// Morus-1280-128 nonce
 pub type Nonce = [u8; 16];
 
-#[repr(transparent)]
+#[repr(align(32))]
 #[derive(Debug, Clone, Copy)]
 struct Lane {
     l: [u64; 4],
@@ -57,7 +57,7 @@ impl Lane {
     }
 }
 
-#[repr(transparent)]
+#[repr(align(32))]
 #[derive(Debug, Clone, Copy)]
 struct State {
     s: [Lane; 5],
