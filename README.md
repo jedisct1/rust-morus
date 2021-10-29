@@ -36,6 +36,7 @@ Macbook Pro - 2,4 GHz Intel Core i9.
 
 | cipher            | speed    |
 | ----------------- | -------- |
+| aes128-gcm        | 1.91 G/s |
 | chacha20-poly1305 | 1.48 G/s |
 | morus             | 3.76 G/s |
 
