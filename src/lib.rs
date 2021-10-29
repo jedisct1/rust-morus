@@ -80,18 +80,6 @@ impl BitAnd for Lane {
 
 impl Lane {
     #[inline]
-    fn rotate_left(self, o: u32) -> Self {
-        Lane {
-            l: [
-                self.l[0].rotate_left(o),
-                self.l[1].rotate_left(o),
-                self.l[2].rotate_left(o),
-                self.l[3].rotate_left(o),
-            ],
-        }
-    }
-
-    #[inline]
     fn shuffle(self, a: usize, b: usize, c: usize, d: usize) -> Self {
         Lane {
             l: [self.l[a], self.l[b], self.l[c], self.l[d]],
@@ -128,25 +116,105 @@ struct State {
 impl State {
     fn update(&mut self, input: Lane) {
         let s = &mut self.s;
-        s[0] ^= s[3] ^ (s[1] & s[2]);
-        s[0] = s[0].rotate_left(13);
-        s[3] = s[3].shuffle(3, 0, 1, 2);
+        s[0].l[0] ^= s[3].l[0];
+        s[0].l[1] ^= s[3].l[1];
+        s[0].l[2] ^= s[3].l[2];
+        s[0].l[3] ^= s[3].l[3];
+        let t = s[3].l[3];
+        s[3].l[3] = s[3].l[2];
+        s[3].l[2] = s[3].l[1];
+        s[3].l[1] = s[3].l[0];
+        s[3].l[0] = t;
+        s[0].l[0] ^= s[1].l[0] & s[2].l[0];
+        s[0].l[1] ^= s[1].l[1] & s[2].l[1];
+        s[0].l[2] ^= s[1].l[2] & s[2].l[2];
+        s[0].l[3] ^= s[1].l[3] & s[2].l[3];
+        s[0].l[0] = s[0].l[0].rotate_left(13);
+        s[0].l[1] = s[0].l[1].rotate_left(13);
+        s[0].l[2] = s[0].l[2].rotate_left(13);
+        s[0].l[3] = s[0].l[3].rotate_left(13);
 
-        s[1] ^= input ^ s[4] ^ (s[2] & s[3]);
-        s[1] = s[1].rotate_left(46);
-        s[4] = s[4].shuffle(2, 3, 0, 1);
+        s[1].l[0] ^= input.l[0];
+        s[1].l[1] ^= input.l[1];
+        s[1].l[2] ^= input.l[2];
+        s[1].l[3] ^= input.l[3];
+        s[1].l[0] ^= s[4].l[0];
+        s[1].l[1] ^= s[4].l[1];
+        s[1].l[2] ^= s[4].l[2];
+        s[1].l[3] ^= s[4].l[3];
+        s[4].l.swap(3, 1);
+        s[4].l.swap(2, 0);
+        s[1].l[0] ^= s[2].l[0] & s[3].l[0];
+        s[1].l[1] ^= s[2].l[1] & s[3].l[1];
+        s[1].l[2] ^= s[2].l[2] & s[3].l[2];
+        s[1].l[3] ^= s[2].l[3] & s[3].l[3];
+        s[1].l[0] = s[1].l[0].rotate_left(46);
+        s[1].l[1] = s[1].l[1].rotate_left(46);
+        s[1].l[2] = s[1].l[2].rotate_left(46);
+        s[1].l[3] = s[1].l[3].rotate_left(46);
 
-        s[2] ^= input ^ s[0] ^ (s[3] & s[4]);
-        s[2] = s[2].rotate_left(38);
-        s[0] = s[0].shuffle(1, 2, 3, 0);
+        s[2].l[0] ^= input.l[0];
+        s[2].l[1] ^= input.l[1];
+        s[2].l[2] ^= input.l[2];
+        s[2].l[3] ^= input.l[3];
+        s[2].l[0] ^= s[0].l[0];
+        s[2].l[1] ^= s[0].l[1];
+        s[2].l[2] ^= s[0].l[2];
+        s[2].l[3] ^= s[0].l[3];
+        let t = s[0].l[0];
+        s[0].l[0] = s[0].l[1];
+        s[0].l[1] = s[0].l[2];
+        s[0].l[2] = s[0].l[3];
+        s[0].l[3] = t;
+        s[2].l[0] ^= s[3].l[0] & s[4].l[0];
+        s[2].l[1] ^= s[3].l[1] & s[4].l[1];
+        s[2].l[2] ^= s[3].l[2] & s[4].l[2];
+        s[2].l[3] ^= s[3].l[3] & s[4].l[3];
+        s[2].l[0] = s[2].l[0].rotate_left(38);
+        s[2].l[1] = s[2].l[1].rotate_left(38);
+        s[2].l[2] = s[2].l[2].rotate_left(38);
+        s[2].l[3] = s[2].l[3].rotate_left(38);
 
-        s[3] ^= input ^ s[1] ^ (s[4] & s[0]);
-        s[3] = s[3].rotate_left(7);
-        s[1] = s[1].shuffle(2, 3, 0, 1);
+        s[3].l[0] ^= input.l[0];
+        s[3].l[1] ^= input.l[1];
+        s[3].l[2] ^= input.l[2];
+        s[3].l[3] ^= input.l[3];
+        s[3].l[0] ^= s[1].l[0];
+        s[3].l[1] ^= s[1].l[1];
+        s[3].l[2] ^= s[1].l[2];
+        s[3].l[3] ^= s[1].l[3];
+        s[1].l.swap(3, 1);
+        s[1].l.swap(2, 0);
+        s[3].l[0] ^= s[4].l[0] & s[0].l[0];
+        s[3].l[1] ^= s[4].l[1] & s[0].l[1];
+        s[3].l[2] ^= s[4].l[2] & s[0].l[2];
+        s[3].l[3] ^= s[4].l[3] & s[0].l[3];
+        s[3].l[0] = s[3].l[0].rotate_left(7);
+        s[3].l[1] = s[3].l[1].rotate_left(7);
+        s[3].l[2] = s[3].l[2].rotate_left(7);
+        s[3].l[3] = s[3].l[3].rotate_left(7);
 
-        s[4] ^= input ^ s[2] ^ (s[0] & s[1]);
-        s[4] = s[4].rotate_left(4);
-        s[2] = s[2].shuffle(3, 0, 1, 2);
+        s[4].l[0] ^= input.l[0];
+        s[4].l[1] ^= input.l[1];
+        s[4].l[2] ^= input.l[2];
+        s[4].l[3] ^= input.l[3];
+        s[4].l[0] ^= s[2].l[0];
+        s[4].l[1] ^= s[2].l[1];
+        s[4].l[2] ^= s[2].l[2];
+        s[4].l[3] ^= s[2].l[3];
+        let t = s[2].l[3];
+        s[2].l[3] = s[2].l[2];
+        s[2].l[2] = s[2].l[1];
+        s[2].l[1] = s[2].l[0];
+        s[2].l[0] = t;
+        s[4].l[0] ^= s[0].l[0] & s[1].l[0];
+        s[4].l[1] ^= s[0].l[1] & s[1].l[1];
+        s[4].l[2] ^= s[0].l[2] & s[1].l[2];
+        s[4].l[3] ^= s[0].l[3] & s[1].l[3];
+        s[4].l[0] = s[4].l[0].rotate_left(4);
+        s[4].l[1] = s[4].l[1].rotate_left(4);
+        s[4].l[2] = s[4].l[2].rotate_left(4);
+        s[4].l[3] = s[4].l[3].rotate_left(4);
     }
 
     pub fn new(key: &Key, nonce: &Nonce) -> Self {
