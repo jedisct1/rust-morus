@@ -3,7 +3,6 @@
 
 use core::convert::TryInto;
 use core::fmt;
-use core::ops::*;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum Error {
@@ -36,56 +35,7 @@ struct Lane {
     l: [u64; 4],
 }
 
-impl BitXor for Lane {
-    type Output = Self;
-
-    #[inline]
-    fn bitxor(self, o: Self) -> Self {
-        Lane {
-            l: [
-                self.l[0] ^ o.l[0],
-                self.l[1] ^ o.l[1],
-                self.l[2] ^ o.l[2],
-                self.l[3] ^ o.l[3],
-            ],
-        }
-    }
-}
-
-impl BitXorAssign for Lane {
-    #[inline]
-    fn bitxor_assign(&mut self, o: Self) {
-        self.l[0] ^= o.l[0];
-        self.l[1] ^= o.l[1];
-        self.l[2] ^= o.l[2];
-        self.l[3] ^= o.l[3];
-    }
-}
-
-impl BitAnd for Lane {
-    type Output = Self;
-
-    #[inline]
-    fn bitand(self, o: Self) -> Self {
-        Lane {
-            l: [
-                self.l[0] & o.l[0],
-                self.l[1] & o.l[1],
-                self.l[2] & o.l[2],
-                self.l[3] & o.l[3],
-            ],
-        }
-    }
-}
-
 impl Lane {
-    #[inline]
-    fn shuffle(self, a: usize, b: usize, c: usize, d: usize) -> Self {
-        Lane {
-            l: [self.l[a], self.l[b], self.l[c], self.l[d]],
-        }
-    }
-
     #[inline]
     fn from_bytes(src: &[u8; 32]) -> Self {
         Lane {
@@ -259,7 +209,14 @@ impl State {
         let p = Lane::from_bytes(src);
         let c = {
             let s = &self.s;
-            p ^ s[0] ^ s[1].shuffle(1, 2, 3, 0) ^ (s[2] & s[3])
+            Lane {
+                l: [
+                    p.l[0] ^ s[0].l[0] ^ s[1].l[1] ^ (s[2].l[0] & s[3].l[0]),
+                    p.l[1] ^ s[0].l[1] ^ s[1].l[2] ^ (s[2].l[1] & s[3].l[1]),
+                    p.l[2] ^ s[0].l[2] ^ s[1].l[3] ^ (s[2].l[2] & s[3].l[2]),
+                    p.l[3] ^ s[0].l[3] ^ s[1].l[0] ^ (s[2].l[3] & s[3].l[3]),
+                ],
+            }
         };
         c.write(dst);
         self.update(p);
@@ -269,7 +226,14 @@ impl State {
         let c = Lane::from_bytes(src);
         let p = {
             let s = &self.s;
-            c ^ s[0] ^ s[1].shuffle(1, 2, 3, 0) ^ (s[2] & s[3])
+            Lane {
+                l: [
+                    c.l[0] ^ s[0].l[0] ^ s[1].l[1] ^ (s[2].l[0] & s[3].l[0]),
+                    c.l[1] ^ s[0].l[1] ^ s[1].l[2] ^ (s[2].l[1] & s[3].l[1]),
+                    c.l[2] ^ s[0].l[2] ^ s[1].l[3] ^ (s[2].l[2] & s[3].l[2]),
+                    c.l[3] ^ s[0].l[3] ^ s[1].l[0] ^ (s[2].l[3] & s[3].l[3]),
+                ],
+            }
         };
         p.write(dst);
         self.update(p);
@@ -282,7 +246,14 @@ impl State {
         let c = Lane::from_bytes(&src_padded);
         let p = {
             let s = &self.s;
-            c ^ s[0] ^ s[1].shuffle(1, 2, 3, 0) ^ (s[2] & s[3])
+            Lane {
+                l: [
+                    c.l[0] ^ s[0].l[0] ^ s[1].l[1] ^ (s[2].l[0] & s[3].l[0]),
+                    c.l[1] ^ s[0].l[1] ^ s[1].l[2] ^ (s[2].l[1] & s[3].l[1]),
+                    c.l[2] ^ s[0].l[2] ^ s[1].l[3] ^ (s[2].l[2] & s[3].l[2]),
+                    c.l[3] ^ s[0].l[3] ^ s[1].l[0] ^ (s[2].l[3] & s[3].l[3]),
+                ],
+            }
         };
         p.write(dst);
         dst[len..].fill(0);
@@ -305,7 +276,10 @@ impl State {
             self.update(t);
         }
         let s = &mut self.s;
-        s[0] ^= s[1].shuffle(1, 2, 3, 0) ^ (s[2] & s[3]);
+        s[0].l[0] ^= s[1].l[1] ^ (s[2].l[0] & s[3].l[0]);
+        s[0].l[1] ^= s[1].l[2] ^ (s[2].l[1] & s[3].l[1]);
+        s[0].l[2] ^= s[1].l[3] ^ (s[2].l[2] & s[3].l[2]);
+        s[0].l[3] ^= s[1].l[0] ^ (s[2].l[3] & s[3].l[3]);
         let mut tag = [0u8; 16];
         tag[0..8].copy_from_slice(&s[0].l[0].to_le_bytes());
         tag[8..16].copy_from_slice(&s[0].l[1].to_le_bytes());
