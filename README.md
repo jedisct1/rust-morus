@@ -57,6 +57,12 @@ WebAssembly (WAVM)
 | chacha20-poly1305 | 335.82 M/s |
 | morus             | 1.95 G/s   |
 
+Other implementations (macOS native)
+
+| cipher (implementation, runtime) | speed    |
+| -------------------------------- | -------- |
+| zig-morus (Zig)                  | 5.89 G/s |
+
 Other implementations (WebAssembly)
 
 | cipher (implementation, runtime)  | speed    |
